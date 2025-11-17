@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  bots      Bot[]
+  payments  Payment[]
+  createdAt DateTime @default(now())
+}
+
+model Bot {
+  id         String   @id @default(cuid())
+  name       String
+  strategy   String
+  apiKey     String?
+  secretKey  String?
+  isActive   Boolean  @default(false)
+  ownerId    String
+  createdAt  DateTime @default(now())
+  owner      User     @relation(fields: [ownerId], references: [id])
+}
+
+model Payment {
+  id        String         @id @default(cuid())
+  userId    String
+  plan      String
+  amount    Float
+  status    PaymentStatus  @default(PENDING)
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
